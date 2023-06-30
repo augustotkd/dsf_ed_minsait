@@ -1,7 +1,9 @@
 CREATE DATABASE IF NOT EXISTS ${TARGET_STAGE_DATABASE};
 
+DROP TABLE IF EXISTS ${TARGET_STAGE_DATABASE}.${TARGET_TABLE_EXTERNAL};
+
 CREATE EXTERNAL TABLE IF NOT EXISTS ${TARGET_STAGE_DATABASE}.${TARGET_TABLE_EXTERNAL} (
-    Division string,
+    Division INT,
     Division_Name string
     )
 COMMENT 'Tabela de Divisao'
@@ -14,11 +16,13 @@ TBLPROPERTIES ("skip.header.line.count"="1");
 
 CREATE DATABASE IF NOT EXISTS ${TARGET_DATABASE};
 
+DROP TABLE IF EXISTS ${TARGET_DATABASE}.${TARGET_TABLE_GERENCIADA};
+
 CREATE TABLE IF NOT EXISTS ${TARGET_DATABASE}.${TARGET_TABLE_GERENCIADA} (
-    Division string,
+    Division INT,
     Division_Name string
     )
-PARTITIONED BY (DT_FOTO STRING)
+PARTITIONED BY (DT_FOTO date)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
@@ -31,8 +35,8 @@ INSERT OVERWRITE TABLE
     ${TARGET_DATABASE}.${TARGET_TABLE_GERENCIADA}
 PARTITION(DT_FOTO)
 SELECT
-    Division string,
-    Division_Name string,
+    Division,
+    Division_Name,
     ${PARTICAO} as DT_FOTO
 FROM ${TARGET_STAGE_DATABASE}.${TARGET_TABLE_EXTERNAL}
 ;

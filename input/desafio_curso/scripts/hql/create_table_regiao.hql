@@ -1,7 +1,9 @@
 CREATE DATABASE IF NOT EXISTS ${TARGET_STAGE_DATABASE};
 
+DROP TABLE IF EXISTS ${TARGET_STAGE_DATABASE}.${TARGET_TABLE_EXTERNAL};
+
 CREATE EXTERNAL TABLE IF NOT EXISTS ${TARGET_STAGE_DATABASE}.${TARGET_TABLE_EXTERNAL} (
-    Region_Code string,
+    Region_Code INT,
     Region_Name string
     )
 COMMENT 'Tabela de Regiao'
@@ -14,11 +16,13 @@ TBLPROPERTIES ("skip.header.line.count"="1");
 
 CREATE DATABASE IF NOT EXISTS ${TARGET_DATABASE};
 
+DROP TABLE IF EXISTS ${TARGET_DATABASE}.${TARGET_TABLE_GERENCIADA};
+
 CREATE TABLE IF NOT EXISTS ${TARGET_DATABASE}.${TARGET_TABLE_GERENCIADA} (
-    Region_Code string,
+    Region_Code INT,
     Region_Name string
     )
-PARTITIONED BY (DT_FOTO STRING)
+PARTITIONED BY (DT_FOTO date)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
@@ -31,8 +35,8 @@ INSERT OVERWRITE TABLE
     ${TARGET_DATABASE}.${TARGET_TABLE_GERENCIADA}
 PARTITION(DT_FOTO)
 SELECT
-    Region_Code string,
-    Region_Name string,
+    Region_Code,
+    Region_Name,
     ${PARTICAO} as DT_FOTO
 FROM ${TARGET_STAGE_DATABASE}.${TARGET_TABLE_EXTERNAL}
 ;
